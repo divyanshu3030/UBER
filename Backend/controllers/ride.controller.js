@@ -33,16 +33,12 @@ module.exports.createRide = async (req, res) => {
         });
 
 
-        console.log("RIDE CREATED:", ride);
 
 
         // Pickup coordinates already saved in ride
         const pickupCoordinates = ride.pickupCoordinates;
 
-        console.log(
-            "PICKUP COORDINATES:",
-            pickupCoordinates
-        );
+       
 
 
         // Find nearby captains
@@ -54,10 +50,7 @@ module.exports.createRide = async (req, res) => {
             );
 
 
-        console.log(
-            "CAPTAINS:",
-            captainsInRadius
-        );
+        
 
 
         // Get ride with user
@@ -86,10 +79,6 @@ module.exports.createRide = async (req, res) => {
 
     } catch (err) {
 
-        console.error(
-            "CREATE RIDE ERROR:",
-            err
-        );
 
         return res.status(500).json({
             message: err.message

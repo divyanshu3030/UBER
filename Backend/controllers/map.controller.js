@@ -29,7 +29,6 @@ module.exports.getDistanceTime = async (req,res, next) => {
         res.status(200).json(distanceTime);
 
     } catch(err) {
-        console.error(err);
         res.status(500).json({ message: 'Internal server error' });
     }
 }
@@ -48,18 +47,17 @@ module.exports.getAuthCompleteSuggestions = async (req, res, next) => {
 
         const { input } = req.query;
 
-        console.log("Input received:", input);
 
         const suggestions =
             await mapServicse.getAuthCompleteSuggestions(input);
 
-        console.log("Suggestions:", suggestions);
+        
 
         res.status(200).json(suggestions);
 
     } catch (err) {
 
-        console.error("MAP SUGGESTION ERROR:", err);
+        
 
         res.status(500).json({
             message: "Internal server error",
