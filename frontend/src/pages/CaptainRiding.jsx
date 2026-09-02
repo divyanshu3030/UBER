@@ -1,59 +1,139 @@
 import React, { useRef, useState } from 'react'
 import { LuLogOut } from 'react-icons/lu'
 import { RiArrowUpWideFill } from 'react-icons/ri'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import FinishRide from '../components/FinishRide'
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
+import LiveTracking from '../components/LiveTracking'
 
 const CaptainRiding = () => {
 
     const [finishRidePanel, setFinishRidePanel] = useState(false)
+
     const finishRidePanelRef = useRef(null)
 
-    useGSAP(function () {
+    const location = useLocation()
+    const rideData = location.state?.ride
+
+
+    // =========================
+    // GSAP
+    // =========================
+
+    useGSAP(() => {
+
         if (finishRidePanel) {
+
             gsap.to(finishRidePanelRef.current, {
-                transform: 'translateY(0)'
+                y: '0%',
+                duration: 0.4,
+                ease: 'power2.out'
             })
+
         } else {
+
             gsap.to(finishRidePanelRef.current, {
-                transform: 'translateY(100%)'
+                y: '100%',
+                duration: 0.4,
+                ease: 'power2.in'
             })
+
         }
+
     }, [finishRidePanel])
 
+
     return (
-        <div className='h-screen'>
-            <div className='fixed p-5 top-0 flex items-center justify-between w-full'>
-                <img className='w-16 ' src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png' alt='' />
-                <Link to='/home' className='h-9 w-9 bg-white flex items-center justify-center rounded-full'>
+        <div className='fixed inset-0 w-full h-screen overflow-hidden bg-white'>
+
+
+            {/* HEADER */}
+
+            <div className='fixed p-5 top-0 left-0 flex items-center justify-between w-full z-50'>
+
+                <img
+                    className='w-16'
+                    src='https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png'
+                    alt=''
+                />
+
+                <Link
+                    to='/home'
+                    className='h-9 w-9 bg-white flex items-center justify-center rounded-full shadow'
+                >
                     <LuLogOut className='text-lg font-medium' />
                 </Link>
-            </div>
-            <div className='h-4/5 w-screen'>
-                <img className="h-full w-full object-cover" src='map.png' alt='' />
-            </div>
-            <div className='h-1/5 w-screen p-6 flex items-center justify-between relative border-8 border-yellow-300 bg-yellow-200'
-                onClick={() => {
-                    setFinishRidePanel(true)
-                }}>
 
-                <h3 onClick={() => {
+            </div>
 
-                }}
-                    className='absolute top-2 left-1/2 -translate-x-1/2 text-3xl text-gray-400'>
+
+            {/* MAP */}
+
+            <div className='absolute top-0 left-0 w-full h-[50%]'>
+
+                <LiveTracking
+                    pickup={{
+                        ltd: 30.2680182,
+                        lng: 77.9961185
+                    }}
+                    destination={{
+                        ltd: 30.3165,
+                        lng: 78.0322
+                    }}
+                />
+
+            </div>
+
+
+            {/* BOTTOM SECTION */}
+
+            <div
+                className='absolute bottom-0 left-0 w-full h-[50%] p-6 flex flex-col justify-center border-8 border-yellow-300 bg-yellow-200 z-10'
+                onClick={() => setFinishRidePanel(true)}
+            >
+                <h3 className='absolute top-2 left-1/2 -translate-x-1/2 text-3xl text-gray-400'>
                     <RiArrowUpWideFill />
                 </h3>
 
+                <h4 className='text-xl font-semibold'>
+                    {rideData ? `Ride ID: ${rideData._id}` : ''}
+                </h4>
 
-                <h4 className='text-xl font-semibold'>4 Km away</h4>
-                <button className=' bg-green-600 text-lg text-white font-semibold p-3 px-10 rounded-lg'>Complete Ride</button>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        setFinishRidePanel(true)
+                    }}
+                    className='w-full bg-green-600 text-white text-lg font-semibold p-3 rounded-lg mt-4'
+                >
+                    Complete Ride
+                </button>
             </div>
 
-            <div ref={finishRidePanelRef} className='fixed w-full  z-10 bottom-0 translate-y-full bg-white px-4 py-8 pt-12'>
-                <FinishRide setFinishRidePanel={setFinishRidePanel} />
+
+            {/* =========================
+                FINISH RIDE PANEL
+            ========================= */}
+
+            <div
+                ref={finishRidePanelRef}
+                className='fixed bottom-0 left-0 w-full h-[50%] bg-white z-[100] translate-y-full rounded-t-2xl shadow-lg'
+            >
+
+                {/* SCROLLABLE CONTENT */}
+
+                <div className='h-[100%] w-full overflow-y-auto px-5 pt-4 pb-8'>
+
+                    <FinishRide
+                        ride={rideData}
+                        setFinishRidePanel={setFinishRidePanel}
+                    />
+
+                </div>
+
             </div>
+
 
         </div>
     )

@@ -35,17 +35,35 @@ module.exports.getDistanceTime = async (req,res, next) => {
 }
 
 module.exports.getAuthCompleteSuggestions = async (req, res, next) => {
-    try{
-        const errors = validationResult(req);
-        if(!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }   
 
-        const {input} = req.query;
-        const suggestions = await mapServicse.getAuthCompleteSuggestions(input);
+    try {
+
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                errors: errors.array()
+            });
+        }
+
+        const { input } = req.query;
+
+        console.log("Input received:", input);
+
+        const suggestions =
+            await mapServicse.getAuthCompleteSuggestions(input);
+
+        console.log("Suggestions:", suggestions);
+
         res.status(200).json(suggestions);
-    } catch(err) {
-        console.error(err);
-        res.status(500).json({ message: 'Internal server error' });
+
+    } catch (err) {
+
+        console.error("MAP SUGGESTION ERROR:", err);
+
+        res.status(500).json({
+            message: "Internal server error",
+            error: err.message
+        });
     }
-}
+};

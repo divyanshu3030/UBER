@@ -1,8 +1,10 @@
 import React from 'react'
 import { FaUser } from 'react-icons/fa'
-import { RiArrowDownWideFill } from 'react-icons/ri'
+import { RiArrowDownWideFill } from 'react-icons/ri';
+
 
 const VehiclePanel = (props) => {
+
     return (
         <div>
             <h3 onClick={() => {
@@ -15,6 +17,7 @@ const VehiclePanel = (props) => {
 
             <div onClick = {()=> {
                 props.setConfirmRidePanel(true)
+                props.selectVehicle('car')
             }}
             className='flex items-center w-full justify-between p-1 border-2 border-gray-200 active:border-black rounded-xl mb-2'>
                 <img className='h-18 w-22' src='carr.png' alt='' />
@@ -24,11 +27,14 @@ const VehiclePanel = (props) => {
                     <p className='font-normal text-xs text-gray-600'>Affordable, compact rides</p>
                 </div>
 
-                <h2 className='text-lg font-semibold p-2'>₹199.33</h2>
+                <h2 className='text-lg font-semibold p-2'>₹{props.fare.car}</h2>
+                
             </div>
+            
 
             <div onClick = {()=> {
                 props.setConfirmRidePanel(true)
+                props.selectVehicle('auto')
             }}
              className='flex items-center w-full justify-between p-1 border-2 border-gray-200 active:border-black rounded-xl mb-2'>
                 <img className='h-18 w-22' src='auto.png' alt='' />
@@ -38,11 +44,12 @@ const VehiclePanel = (props) => {
                     <p className='font-normal text-xs text-gray-600'>Affordable Auto rides</p>
                 </div>
 
-                <h2 className='text-lg font-semibold p-2'>₹115.60</h2>
+                <h2 className='text-lg font-semibold p-2'>₹{props.fare.auto}</h2>
             </div>
 
             <div onClick = {()=> {
                 props.setConfirmRidePanel(true)
+                props.selectVehicle('moto')
             }}
             className='flex items-center w-full justify-between p-1 border-2 border-gray-200 active:border-black rounded-xl mb-2'>
                 <img className='h-18 w-22' src='bike.png' alt='' />
@@ -52,11 +59,11 @@ const VehiclePanel = (props) => {
                     <p className='font-normal text-xs text-gray-600'>Affordable motorcycle rides</p>
                 </div>
 
-                <h2 className='text-lg font-semibold p-2'>₹62.22</h2>
+                <h2 className='text-lg font-semibold p-2'>₹{props.fare.moto}</h2>
             </div>
 
         </div>
-    )
+    );
 }
 
 export default VehiclePanel

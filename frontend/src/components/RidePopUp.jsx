@@ -17,7 +17,10 @@ const RidePopUp = (props) => {
             <div className='flex justify-between items-center p-2 mt-5 mb-2 bg-yellow-400 rounded-lg'>
                 <div className='flex items-center gap-3'>
                     <img className='h-12 w-12 rounded-full object-cover' src='thor.jpg' alt='' />
-                    <h2 className='text-xl font-semibold'>Avengers</h2>
+                    <h2 className='text-xl font-semibold'>
+                        {props.ride?.user?.fullname?.firstname}{" "}
+                        {props.ride?.user?.fullname?.lastname}
+                    </h2>
                 </div>
                 <h5 className='text-lg font-semibold'>2.2 KM</h5>
             </div>
@@ -31,7 +34,7 @@ const RidePopUp = (props) => {
                         <MdMyLocation className='text-lg ' />
                         <div>
                             <h3 className='text-lg font-medium'>562/11-A</h3>
-                            <p className='text-am -mt-1 text-gray-600'>shimla by pass dehradun</p>
+                            <p className='text-am -mt-1 text-gray-600'>{props.ride?.pickup}</p>
                         </div>
                     </div>
 
@@ -39,14 +42,14 @@ const RidePopUp = (props) => {
                         <IoLocation className='text-lg ' />
                         <div>
                             <h3 className='text-lg font-medium'>562/11-A</h3>
-                            <p className='text-am -mt-1 text-gray-600'>shimla by pass dehradun</p>
+                            <p className='text-am -mt-1 text-gray-600'>{props.ride?.destination}</p>
                         </div>
                     </div>
 
                     <div className='flex flex-row items-center gap-5 p-3'>
                         <MdPayment className='text-lg ' />
                         <div>
-                            <h3 className='text-lg font-medium'>₹199.33</h3>
+                            <h3 className='text-lg font-medium'>₹{props.ride?.fare}</h3>
                             <p className='text-am -mt-1 text-gray-600'>Cash</p>
                         </div>
                     </div>
@@ -60,6 +63,7 @@ const RidePopUp = (props) => {
 
                     <button onClick={() => {
                         props.setConfirmRidePopUpPanel(true);
+                        props.confirmRide()
                     }} className=' bg-green-600 text-lg  text-white font-semibold p-3 px-10 rounded-lg'>Accept</button>
                 </div>
 

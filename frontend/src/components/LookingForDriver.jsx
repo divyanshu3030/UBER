@@ -4,6 +4,13 @@ import { MdMyLocation, MdPayment } from 'react-icons/md'
 import { RiArrowDownWideFill } from 'react-icons/ri'
 
 const LookingForDriver = (props) => {
+
+    const vehicleImages = {
+        car: '/carr.png',
+        moto: '/bike.png',
+        auto: '/auto.png'
+    }
+
     return (
         <div>
             <h3 onClick={() => {
@@ -15,7 +22,7 @@ const LookingForDriver = (props) => {
             <h3 className='text-2xl font-semibold mb-2'>Looking for a Driver..</h3>
 
             <div className='flex gap-2 justify-between flex-col items-center'>
-                <img className='h-40' src='carr.png' alt='' />
+                <img className='h-40' src={vehicleImages[props.vehicleType]} alt='' />
 
                 <div className='w-full'>
 
@@ -23,7 +30,7 @@ const LookingForDriver = (props) => {
                         <MdMyLocation className='text-lg ' />
                         <div>
                             <h3 className='text-lg font-medium'>562/11-A</h3>
-                            <p className='text-am -mt-1 text-gray-600'>shimla by pass dehradun</p>
+                            <p className='text-am -mt-1 text-gray-600'>{props.pickup}</p>
                         </div>
                     </div>
 
@@ -31,14 +38,14 @@ const LookingForDriver = (props) => {
                         <IoLocation className='text-lg ' />
                         <div>
                             <h3 className='text-lg font-medium'>562/11-A</h3>
-                            <p className='text-am -mt-1 text-gray-600'>shimla by pass dehradun</p>
+                            <p className='text-am -mt-1 text-gray-600'>{props.destination}</p>
                         </div>
                     </div>
 
                     <div className='flex flex-row items-center gap-5 p-3'>
                         <MdPayment className='text-lg ' />
                         <div>
-                            <h3 className='text-lg font-medium'>₹199.33</h3>
+                            <h3 className='text-lg font-medium'>₹{props.fare[props.vehicleType]}</h3>
                             <p className='text-am -mt-1 text-gray-600'>Cash</p>
                         </div>
                     </div>

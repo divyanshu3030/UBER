@@ -1,15 +1,18 @@
-import React from 'react'
+import React, {useContext} from 'react'
+import { CaptainDataContext } from '../context/CaptainContext'
 import { IoMdSpeedometer } from 'react-icons/io'
 import { IoTimerOutline } from 'react-icons/io5'
 import { MdSpeakerNotes } from 'react-icons/md'
 
 const CaptainDetails = () => {
+
+    const { captain } = useContext(CaptainDataContext)
     return (
         <div>
             <div className='flex items-center justify-between mb-3'>
                 <div className='flex items-center justify-start gap-3'>
                     <img className="w-10 h-10 rounded-full object-cover" src="https://imgs.search.brave.com/HKfaFyIPjOR3sF0namUadB5xtbJR-ssRhPgaOq5RTOg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cGl4YWJheS5jb20v/cGhvdG8vMjAxNC8w/OS8xNy8xMS80Ny9t/YW4tNDQ5NDA0XzY0/MC5qcGc" alt="" />
-                    <h4 className="text-lg font-medium">Divyanshu</h4>
+                    <h4 className="text-lg font-medium capitalize">{captain.fullname.firstname + " " + captain.fullname.lastname }</h4>
                 </div>
                 <div className='flex flex-col items-end'>
                     <h4 className="text-xl font-bold">₹309.30</h4>

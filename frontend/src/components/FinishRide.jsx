@@ -1,66 +1,202 @@
 import React from 'react'
-import { IoLocation } from 'react-icons/io5';
-import { MdMyLocation, MdPayment } from 'react-icons/md';
-import { RiArrowDownWideFill } from 'react-icons/ri';
-import { Link } from 'react-router-dom';
+import { IoLocation } from 'react-icons/io5'
+import { MdMyLocation, MdPayment } from 'react-icons/md'
+import { RiArrowDownWideFill } from 'react-icons/ri'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 const FinishRide = (props) => {
+
+    const navigate = useNavigate()
+
+
+    // =========================
+    // END RIDE
+    // =========================
+
+    async function endRide() {
+
+        try {
+
+            const response = await axios.post(
+                `${import.meta.env.VITE_BASE_URL}/rides/end-ride`,
+                {
+                    rideId: props.ride?._id
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                }
+            )
+
+            if (response.status === 200) {
+                navigate('/captain-home')
+            }
+
+        } catch (error) {
+
+            console.log(
+                'END RIDE ERROR:',
+                error.response?.data || error.message
+            )
+
+        }
+    }
+
+
     return (
-        <div>
-            <h3 onClick={() => {
-                props.setFinishRidePanel(false);
-            }}
-                className='p-1 flex justify-center  font-bold w-[93%] absolute top-0 text-3xl text-gray-400'>
+
+        <div className='w-full'>
+
+
+            {/* =========================
+                CLOSE BUTTON
+            ========================= */}
+
+            <button
+                onClick={() => {
+                    props.setFinishRidePanel(false)
+                }}
+                className='w-full flex justify-center text-3xl text-gray-400 cursor-pointer p-1 mb-4'
+            >
                 <RiArrowDownWideFill />
+            </button>
+
+
+            {/* =========================
+                TITLE
+            ========================= */}
+
+            <h3 className='text-2xl font-semibold mb-5'>
+                Finish this Ride...
             </h3>
-            <h3 className='text-2xl font-semibold mb-2'>Finish this Ride...</h3>
 
-            <div className='flex justify-between items-center p-2 mt-5 mb-2 border-2 border-yellow-400 rounded-lg'>
-                <div className='flex items-center gap-3'>
-                    <img className='h-12 w-12 rounded-full object-cover' src='thor.jpg' alt='' />
-                    <h2 className='text-xl font-semibold'>Avengers</h2>
+
+            {/* =========================
+                USER
+            ========================= */}
+
+            <div className='flex justify-between items-center p-2 mb-1 border-2 border-yellow-400 rounded-lg w-full'>
+
+                <div className='flex items-center gap-3 min-w-0'>
+
+                    <img
+                        className='h-12 w-12 rounded-full object-cover flex-shrink-0'
+                        src='thor.jpg's
+                        alt=''
+                    />
+
+                    <h2 className='text-xl font-semibold truncate'>
+                        {props.ride?.user?.fullname?.firstname}
+                    </h2>
+
                 </div>
-                <h5 className='text-lg font-semibold'>2.2 KM</h5>
+
+                <h5 className='text-lg font-semibold ml-3 flex-shrink-0'>
+                    2.2 KM
+                </h5>
+
             </div>
 
-            <div className='flex gap-2 justify-between flex-col items-center'>
+
+            {/* =========================
+                RIDE DETAILS
+            ========================= */}
+
+            <div className='w-full'>
 
 
-                <div className='w-full'>
+                {/* PICKUP */}
 
-                    <div className='flex flex-row items-center gap-5 p-3 border-b-2 border-gray-300'>
-                        <MdMyLocation className='text-lg ' />
-                        <div>
-                            <h3 className='text-lg font-medium'>562/11-A</h3>
-                            <p className='text-am -mt-1 text-gray-600'>shimla by pass dehradun</p>
-                        </div>
+                <div className='flex items-start gap-5 p-4 border-b-2 border-gray-300'>
+
+                    <MdMyLocation className='text-xl flex-shrink-0 mt-1' />
+
+                    <div className='min-w-0 flex-1'>
+
+                        <h3 className='text-lg font-medium'>
+                            Pickup
+                        </h3>
+
+                        <p className='text-sm mt-1 text-gray-600 break-words'>
+                            {props.ride?.pickup}
+                        </p>
+
                     </div>
 
-                    <div className='flex flex-row items-center gap-5 p-3 border-b-2 border-gray-300'>
-                        <IoLocation className='text-lg ' />
-                        <div>
-                            <h3 className='text-lg font-medium'>562/11-A</h3>
-                            <p className='text-am -mt-1 text-gray-600'>shimla by pass dehradun</p>
-                        </div>
-                    </div>
-
-                    <div className='flex flex-row items-center gap-5 p-3'>
-                        <MdPayment className='text-lg ' />
-                        <div>
-                            <h3 className='text-lg font-medium'>₹199.33</h3>
-                            <p className='text-am -mt-1 text-gray-600'>Cash</p>
-                        </div>
-                    </div>
                 </div>
 
 
-                <div className='mt-6 w-full'>
-                        <Link to='/captain-home' className='w-full mt-2 flex justify-center bg-green-600 text-white font-semibold p-3 rounded-lg'> Finish Ride</Link>
+                {/* DESTINATION */}
 
-                        <p className='text-center text-gray-600 mt-4'>Click on finish button if you have completed the payment</p>
+                <div className='flex items-start gap-5 p-4 border-b-2 border-gray-300'>
+
+                    <IoLocation className='text-xl flex-shrink-0 mt-1' />
+
+                    <div className='min-w-0 flex-1'>
+
+                        <h3 className='text-lg font-medium'>
+                            Destination
+                        </h3>
+
+                        <p className='text-sm mt-1 text-gray-600 break-words'>
+                            {props.ride?.destination}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {/* PAYMENT */}
+
+                <div className='flex items-start gap-5 p-4'>
+
+                    <MdPayment className='text-xl flex-shrink-0 mt-1' />
+
+                    <div>
+
+                        <h3 className='text-lg font-medium'>
+                            ₹{props.ride?.fare}
+                        </h3>
+
+                        <p className='text-sm mt-1 text-gray-600'>
+                            Cash
+                        </p>
+
+                    </div>
+
                 </div>
 
             </div>
+
+
+            {/* =========================
+                FINISH RIDE
+            ========================= */}
+
+            <div className='mt-8 w-full'>
+
+                <button
+                    onClick={endRide}
+                    className='w-full bg-green-600 text-white text-lg font-semibold p-3 rounded-lg'
+                >
+                    Finish Ride
+                </button>
+
+                <p className='text-center text-gray-600 mt-4 px-2'>
+                    Click on finish button if you have completed the payment
+                </p>
+
+            </div>
+
+
+            {/* EXTRA SPACE FOR SCROLL */}
+
+            <div className='h-32'></div>
+
+
         </div>
     )
 }
