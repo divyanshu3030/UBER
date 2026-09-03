@@ -1,17 +1,10 @@
 const axios = require("axios");
 const captainModel = require("../models/captain.model");
 
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org";
+const GEOAPIFY_URL = "https://api.geoapify.com/v1";
 const OSRM_URL = "https://router.project-osrm.org";
 
-const nominatimConfig = {
-    headers: {
-        "User-Agent": "UberClone/1.0 (divyanshunegi9458@gmail.com)",
-        "Accept-Language": "en",
-        "Accept": "application/json"
-    },
-    timeout: 10000
-};
+const GEOAPIFY_API_KEY = process.env.GEOAPIFY_API_KEY;
 
 // ======================================
 // SIMPLE IN-MEMORY CACHE
@@ -19,71 +12,75 @@ const nominatimConfig = {
 
 const locationCache = new Map();
 
-const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
+const CACHE_TIME = 10 * 60 * 1000; // 10 minutes
 
 
 // ======================================
-// DELAY HELPER
+// GEOAPIFY GEOCODING
 // ======================================
 
-const delay = (ms) =>
-    new Promise(resolve => setTimeout(resolve, ms));
+const searchGeoapify = async (query, limit = 1, autocomplete = false) => {
 
+    if (!query || query.trim().length < 3) {
+        return [];
+    }
 
-// ======================================
-// NOMINATIM SEARCH
-// ======================================
-
-const searchNominatim = async (query, limit = 1) => {
-
-    const cacheKey = `${query.toLowerCase().trim()}_${limit}`;
+    const cacheKey =
+        `${autocomplete ? "auto" : "search"}_${query.toLowerCase().trim()}_${limit}`;
 
     // Check cache
     const cached = locationCache.get(cacheKey);
 
     if (cached && Date.now() - cached.time < CACHE_TIME) {
+
         console.log("📦 Using cached location:", query);
+
         return cached.data;
     }
 
     try {
 
-        // Small delay to reduce rate-limit problems
-        await delay(1100);
+        const endpoint = autocomplete
+            ? `${GEOAPIFY_URL}/geocode/autocomplete`
+            : `${GEOAPIFY_URL}/geocode/search`;
 
-        const response = await axios.get(
-            `${NOMINATIM_URL}/search`,
-            {
-                ...nominatimConfig,
-                params: {
-                    q: query,
-                    format: "json",
-                    addressdetails: 1,
-                    limit,
-                    countrycodes: "in"
-                }
-            }
-        );
+        console.log("🌍 Geoapify request:", query);
+
+        const response = await axios.get(endpoint, {
+
+            params: {
+                text: query,
+                format: "json",
+                limit: limit,
+                lang: "en",
+                filter: "countrycode:in",
+                apiKey: GEOAPIFY_API_KEY
+            },
+
+            timeout: 10000
+        });
+
+        const results = response.data.results || [];
 
         // Save in cache
         locationCache.set(cacheKey, {
             time: Date.now(),
-            data: response.data
+            data: results
         });
 
-        return response.data;
+        console.log(
+            "✅ Geoapify success:",
+            query,
+            "results:",
+            results.length
+        );
+
+        return results;
 
     } catch (error) {
 
-        if (error.response?.status === 429) {
-            console.error("❌ Nominatim rate limit reached");
-            throw new Error(
-                "Location service is temporarily busy. Please try again."
-            );
-        }
-
         console.error(
-            "❌ Nominatim Error:",
+            "❌ Geoapify Error:",
             error.response?.data || error.message
         );
 
@@ -102,7 +99,7 @@ module.exports.getAddressCooordinate = async (address) => {
         throw new Error("Address is required");
     }
 
-    const data = await searchNominatim(address, 1);
+    const data = await searchGeoapify(address, 1, false);
 
     if (!data || data.length === 0) {
         throw new Error("Location not found");
@@ -124,16 +121,20 @@ module.exports.getAddressCooordinate = async (address) => {
 module.exports.getDistanceTime = async (origin, destination) => {
 
     if (!origin || !destination) {
-        throw new Error("Origin and destination are required");
+        throw new Error(
+            "Origin and destination are required"
+        );
     }
 
     try {
 
         // Origin
-        const originData = await searchNominatim(origin, 1);
+        const originData =
+            await searchGeoapify(origin, 1, false);
 
         // Destination
-        const destinationData = await searchNominatim(destination, 1);
+        const destinationData =
+            await searchGeoapify(destination, 1, false);
 
         if (
             originData.length === 0 ||
@@ -151,16 +152,22 @@ module.exports.getDistanceTime = async (origin, destination) => {
         const destinationCoords =
             `${destinationLocation.lon},${destinationLocation.lat}`;
 
-        // OSRM
+
+        // ======================================
+        // OSRM ROUTING
+        // ======================================
+
         const routeResponse = await axios.get(
             `${OSRM_URL}/route/v1/driving/${originCoords};${destinationCoords}`,
             {
                 params: {
                     overview: false
                 },
+
                 timeout: 10000
             }
         );
+
 
         if (
             routeResponse.data.code !== "Ok" ||
@@ -170,9 +177,12 @@ module.exports.getDistanceTime = async (origin, destination) => {
             throw new Error("Route not found");
         }
 
+
         const route = routeResponse.data.routes[0];
 
+
         return {
+
             distance: {
                 text: `${(route.distance / 1000).toFixed(1)} km`,
                 value: route.distance
@@ -182,6 +192,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
                 text: `${Math.ceil(route.duration / 60)} mins`,
                 value: route.duration
             }
+
         };
 
     } catch (error) {
@@ -206,13 +217,26 @@ module.exports.getAuthCompleteSuggestions = async (input) => {
         return [];
     }
 
-    const data = await searchNominatim(input, 5);
+    const data =
+        await searchGeoapify(input, 5, true);
+
 
     return data.map((place) => ({
-        description: place.display_name,
-        place_id: place.place_id,
-        lat: parseFloat(place.lat),
-        lng: parseFloat(place.lon)
+
+        description:
+            place.formatted ||
+            place.address_line1 ||
+            place.name,
+
+        place_id:
+            place.place_id,
+
+        lat:
+            parseFloat(place.lat),
+
+        lng:
+            parseFloat(place.lon)
+
     }));
 };
 
@@ -228,14 +252,23 @@ module.exports.getCaptainInTheRadius = async (
 ) => {
 
     const captains = await captainModel.find({
+
         location: {
+
             $geoWithin: {
+
                 $centerSphere: [
+
                     [lng, lat],
+
                     radius / 6371
+
                 ]
+
             }
+
         }
+
     });
 
     return captains;
