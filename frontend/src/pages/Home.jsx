@@ -46,18 +46,30 @@ const Home = () => {
 
     }, [user]);
 
-    socket.on('ride-confirmed', ride => {
-        console.log("🚗 RIDE CONFIRMED:", ride);
+    useEffect(() => {
+        if (!socket) return;
 
-        setRide(ride);
-        setVehicleFound(false);
-        setWaitingForDriver(true);
-    });
+        const handleRideConfirmed = (ride) => {
+            console.log("🚗 RIDE CONFIRMED:", ride);
 
-    socket.on('ride-started', ride => {
-        setWaitingForDriver(false)
-        navigate('/riding', { state: { ride } })
-    })
+            setRide(ride);
+            setVehicleFound(false);
+            setWaitingForDriver(true);
+        };
+
+        const handleRideStarted = (ride) => {
+            setWaitingForDriver(false);
+            navigate('/riding', { state: { ride } });
+        };
+
+        socket.on("ride-confirmed", handleRideConfirmed);
+        socket.on("ride-started", handleRideStarted);
+
+        return () => {
+            socket.off("ride-confirmed", handleRideConfirmed);
+            socket.off("ride-started", handleRideStarted);
+        };
+    }, [socket, navigate]);
 
     const panelRef = useRef(null);
     const vehiclePanelRef = useRef(null);
@@ -113,7 +125,7 @@ const Home = () => {
                 setPickupSuggestions([]);
             }
 
-        }, 1000);
+        }, 1500);
 
         // Agar user dobara type kare
         // to purana timer cancel ho jayega
@@ -170,7 +182,7 @@ const Home = () => {
                 setDestinationSuggestions([]);
             }
 
-        }, 1000);
+        }, 1500);
 
         return () => clearTimeout(timer);
 

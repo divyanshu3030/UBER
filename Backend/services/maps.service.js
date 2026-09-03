@@ -1,5 +1,5 @@
 const axios = require("axios");
-const captainModel = require('../models/captain.model');
+const captainModel = require("../models/captain.model");
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org";
 const OSRM_URL = "https://router.project-osrm.org";
@@ -7,48 +7,83 @@ const OSRM_URL = "https://router.project-osrm.org";
 const nominatimConfig = {
     headers: {
         "User-Agent": "UberClone/1.0 (divyanshunegi9458@gmail.com)",
-        "Accept-Language": "en"
+        "Accept-Language": "en",
+        "Accept": "application/json"
     },
     timeout: 10000
 };
 
-// ===============================
-// GET COORDINATES
-// ===============================
-module.exports.getAddressCooordinate = async (address) => {
+// ======================================
+// SIMPLE IN-MEMORY CACHE
+// ======================================
 
-    if (!address) {
-        throw new Error("Address is required");
+const locationCache = new Map();
+
+const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
+
+
+// ======================================
+// DELAY HELPER
+// ======================================
+
+const delay = (ms) =>
+    new Promise(resolve => setTimeout(resolve, ms));
+
+
+// ======================================
+// NOMINATIM SEARCH
+// ======================================
+
+const searchNominatim = async (query, limit = 1) => {
+
+    const cacheKey = `${query.toLowerCase().trim()}_${limit}`;
+
+    // Check cache
+    const cached = locationCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.time < CACHE_TIME) {
+        console.log("📦 Using cached location:", query);
+        return cached.data;
     }
 
     try {
 
-        const response = await axios.get(`${NOMINATIM_URL}/search`, {
-            ...nominatimConfig,
-            params: {
-                q: address,
-                format: "json",
-                limit: 1,
-                addressdetails: 1,
-                countrycodes: "in"
+        // Small delay to reduce rate-limit problems
+        await delay(1100);
+
+        const response = await axios.get(
+            `${NOMINATIM_URL}/search`,
+            {
+                ...nominatimConfig,
+                params: {
+                    q: query,
+                    format: "json",
+                    addressdetails: 1,
+                    limit,
+                    countrycodes: "in"
+                }
             }
+        );
+
+        // Save in cache
+        locationCache.set(cacheKey, {
+            time: Date.now(),
+            data: response.data
         });
 
-        if (!response.data || response.data.length === 0) {
-            throw new Error("Location not found");
-        }
-
-        const location = response.data[0];
-
-        return {
-            ltd: parseFloat(location.lat),
-            lng: parseFloat(location.lon)
-        };
+        return response.data;
 
     } catch (error) {
 
+        if (error.response?.status === 429) {
+            console.error("❌ Nominatim rate limit reached");
+            throw new Error(
+                "Location service is temporarily busy. Please try again."
+            );
+        }
+
         console.error(
-            "Coordinate Error:",
+            "❌ Nominatim Error:",
             error.response?.data || error.message
         );
 
@@ -57,9 +92,35 @@ module.exports.getAddressCooordinate = async (address) => {
 };
 
 
-// ===============================
+// ======================================
+// GET COORDINATES
+// ======================================
+
+module.exports.getAddressCooordinate = async (address) => {
+
+    if (!address || address.trim().length < 3) {
+        throw new Error("Address is required");
+    }
+
+    const data = await searchNominatim(address, 1);
+
+    if (!data || data.length === 0) {
+        throw new Error("Location not found");
+    }
+
+    const location = data[0];
+
+    return {
+        ltd: parseFloat(location.lat),
+        lng: parseFloat(location.lon)
+    };
+};
+
+
+// ======================================
 // GET DISTANCE & TIME
-// ===============================
+// ======================================
+
 module.exports.getDistanceTime = async (origin, destination) => {
 
     if (!origin || !destination) {
@@ -68,43 +129,21 @@ module.exports.getDistanceTime = async (origin, destination) => {
 
     try {
 
-        // Origin coordinates
-        const originResponse = await axios.get(
-            `${NOMINATIM_URL}/search`,
-            {
-                ...nominatimConfig,
-                params: {
-                    q: origin,
-                    format: "json",
-                    limit: 1,
-                    countrycodes: "in"
-                }
-            }
-        );
+        // Origin
+        const originData = await searchNominatim(origin, 1);
 
-        // Destination coordinates
-        const destinationResponse = await axios.get(
-            `${NOMINATIM_URL}/search`,
-            {
-                ...nominatimConfig,
-                params: {
-                    q: destination,
-                    format: "json",
-                    limit: 1,
-                    countrycodes: "in"
-                }
-            }
-        );
+        // Destination
+        const destinationData = await searchNominatim(destination, 1);
 
         if (
-            originResponse.data.length === 0 ||
-            destinationResponse.data.length === 0
+            originData.length === 0 ||
+            destinationData.length === 0
         ) {
             throw new Error("Location not found");
         }
 
-        const originLocation = originResponse.data[0];
-        const destinationLocation = destinationResponse.data[0];
+        const originLocation = originData[0];
+        const destinationLocation = destinationData[0];
 
         const originCoords =
             `${originLocation.lon},${originLocation.lat}`;
@@ -112,7 +151,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
         const destinationCoords =
             `${destinationLocation.lon},${destinationLocation.lat}`;
 
-        // OSRM route
+        // OSRM
         const routeResponse = await axios.get(
             `${OSRM_URL}/route/v1/driving/${originCoords};${destinationCoords}`,
             {
@@ -138,6 +177,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
                 text: `${(route.distance / 1000).toFixed(1)} km`,
                 value: route.distance
             },
+
             duration: {
                 text: `${Math.ceil(route.duration / 60)} mins`,
                 value: route.duration
@@ -147,7 +187,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
     } catch (error) {
 
         console.error(
-            "Distance Error:",
+            "❌ Distance Error:",
             error.response?.data || error.message
         );
 
@@ -156,50 +196,37 @@ module.exports.getDistanceTime = async (origin, destination) => {
 };
 
 
-// ===============================
+// ======================================
 // LOCATION SUGGESTIONS
-// ===============================
+// ======================================
+
 module.exports.getAuthCompleteSuggestions = async (input) => {
 
     if (!input || input.trim().length < 3) {
         return [];
     }
 
-    try {
+    const data = await searchNominatim(input, 5);
 
-        const response = await axios.get(
-            `${NOMINATIM_URL}/search`,
-            {
-                ...nominatimConfig,
-                params: {
-                    q: input,
-                    format: "json",
-                    addressdetails: 1,
-                    limit: 5,
-                    countrycodes: "in"
-                }
-            }
-        );
-
-        return response.data.map((place) => ({
-            description: place.display_name,
-            place_id: place.place_id,
-            lat: parseFloat(place.lat),
-            lng: parseFloat(place.lon)
-        }));
-
-    } catch (error) {
-
-        console.error(
-            "Suggestion Error:",
-            error.response?.data || error.message
-        );
-
-        throw error;
-    }
+    return data.map((place) => ({
+        description: place.display_name,
+        place_id: place.place_id,
+        lat: parseFloat(place.lat),
+        lng: parseFloat(place.lon)
+    }));
 };
 
-module.exports.getCaptainInTheRadius = async (lat, lng, radius) => {
+
+// ======================================
+// CAPTAINS IN RADIUS
+// ======================================
+
+module.exports.getCaptainInTheRadius = async (
+    lat,
+    lng,
+    radius
+) => {
+
     const captains = await captainModel.find({
         location: {
             $geoWithin: {
