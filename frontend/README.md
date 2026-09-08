@@ -133,7 +133,7 @@ New users can create an account using the signup page.
 
 Registered users can log in to access the ride-booking functionality.
 
-<img width="428" height="762" alt="user login" src="https://github.com/user-attachments/assets/89f7fd34-8f47-4151-8aa8-8ba2ba647bae" />
+<img width="350" height="632" alt="user login" src="https://github.com/user-attachments/assets/89f7fd34-8f47-4151-8aa8-8ba2ba647bae" />
 
 
 
@@ -172,7 +172,7 @@ New captains can register through the captain signup page.
 
 Registered captains can log in and access the captain dashboard.
 
-<img width="353" height="632" alt="captain login" src="https://github.com/user-attachments/assets/8a2c8275-f411-4474-afb5-16a53281b9d8" />
+<img width="350" height="632" alt="captain login" src="https://github.com/user-attachments/assets/8a2c8275-f411-4474-afb5-16a53281b9d8" />
 
 
 
@@ -206,7 +206,7 @@ The frontend uses the following API endpoint:
 
 The request includes the typed location as an input parameter.
 
-<img width="428" height="767" alt="Screenshot 2026-09-08 205428" src="https://github.com/user-attachments/assets/eef5a9ef-2aca-4ab8-af97-f34742428063" />
+<img width="350" height="632" alt="Screenshot 2026-09-08 205428" src="https://github.com/user-attachments/assets/eef5a9ef-2aca-4ab8-af97-f34742428063" />
 
 
 
@@ -274,7 +274,7 @@ The application displays:
 * Ride description
 * Dynamic fare
 
-<img width="425" height="766" alt="Screenshot 2026-09-08 205850" src="https://github.com/user-attachments/assets/4de3ba2b-eeae-4984-8bdf-f2f9ef8e8be1" />
+<img width="350" height="632" alt="Screenshot 2026-09-08 205850" src="https://github.com/user-attachments/assets/4de3ba2b-eeae-4984-8bdf-f2f9ef8e8be1" />
 
 
 
@@ -294,7 +294,7 @@ Moto  → ₹Fare
 
 The user can select a vehicle based on the available options and fare.
 
-<img width="425" height="766" alt="Screenshot 2026-09-08 205850" src="https://github.com/user-attachments/assets/a15a3ff2-9324-4f2e-bf59-08a04e8486ba" />
+<img width="350" height="632" alt="Screenshot 2026-09-08 205850" src="https://github.com/user-attachments/assets/a15a3ff2-9324-4f2e-bf59-08a04e8486ba" />
 
 
 
@@ -382,7 +382,7 @@ The user information is sent with the socket connection so that the backend can 
 
 ---
 
-<img width="720" height="1600" alt="WhatsApp Image 2026-09-08 at 9 12 24 PM" src="https://github.com/user-attachments/assets/814dfdec-403f-4528-9a9a-4c1b486f2fa6" />
+<img width="350" height="632" alt="WhatsApp Image 2026-09-08 at 9 12 24 PM" src="https://github.com/user-attachments/assets/814dfdec-403f-4528-9a9a-4c1b486f2fa6" />
 
 
 
@@ -397,7 +397,7 @@ The frontend then:
 * Stops the driver search process
 * Opens the waiting interface
 
-<img width="731" height="1600" alt="accept ride" src="https://github.com/user-attachments/assets/5d4d465f-e39d-444a-921c-385b23fa5157" />
+<img width="350" height="632" alt="accept ride" src="https://github.com/user-attachments/assets/5d4d465f-e39d-444a-921c-385b23fa5157" />
 
 
 
@@ -480,7 +480,7 @@ The `ConfirmRidePopUp` component is used during the captain-side ride confirmati
 
 The captain can proceed with the ride after confirming the required ride information.
 
-<img width="731" height="1600" alt="accept ride" src="https://github.com/user-attachments/assets/eab580c8-9d0a-427c-8e38-166cd69da90e" />
+<img width="350" height="632" alt="accept ride" src="https://github.com/user-attachments/assets/eab580c8-9d0a-427c-8e38-166cd69da90e" />
 
 
 
